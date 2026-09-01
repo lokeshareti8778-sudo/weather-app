@@ -1,8 +1,8 @@
-name: CD Pipeline
+name: CD Workflow
 
 on:
   workflow_run:
-    workflows: ["CI Pipeline"]
+    workflows: ["CI Workflow"]
     types:
       - completed
 
@@ -12,18 +12,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
       - name: Deploy to Azure VM
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.AZURE_VM_HOST }}
-          username: ${{ secrets.AZURE_VM_USER }}
-          key: ${{ secrets.AZURE_VM_SSH_KEY }}
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /home/azureuser/weather-app
+            cd ~/weather-app
             git pull origin main
-            pip3 install -r requirements.txt
-            pkill -f "python3 app.py" || true
-            nohup python3 app.py > app.log 2>&1 &
+            source venv/bin/activate
+            pip install -r requirements.txt
+            pkill -f "python app.py" || true
+            nohup python app.py > app.log 2>&1 &
