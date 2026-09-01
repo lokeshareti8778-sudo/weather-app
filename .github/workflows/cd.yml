@@ -2,7 +2,8 @@ name: CD Workflow
 
 on:
   workflow_run:
-    workflows: ["CI Workflow"]
+    workflows:
+      - CI Workflow
     types:
       - completed
 
@@ -12,16 +13,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Deploy to Azure VM
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
+          port: 22
           script: |
             cd ~/weather-app
             git pull origin main
-            source venv/bin/activate
+            source venv/bin/activate || true
             pip install -r requirements.txt
             pkill -f "python app.py" || true
             nohup python app.py > app.log 2>&1 &
